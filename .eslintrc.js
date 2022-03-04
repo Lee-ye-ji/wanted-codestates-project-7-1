@@ -1,5 +1,10 @@
 module.exports = {
   root: true,
+  parserOptions: {
+    ecmaVersion: 12,
+    sourceType: 'module',
+    ecmaFeatures: { jsx: true },
+  },
   extends: [
     'eslint:recommended',
     '@react-native-community',
@@ -10,6 +15,7 @@ module.exports = {
   plugins: ['react', 'react-hooks', 'prettier'],
   rules: {
     'prettier/prettier': 'error',
-    'react/jsx-filename-extension': ['error', {extensions: ['.jsx']}],
+    'no-unused-vars': 'warn',
+    'react/jsx-filename-extension': ['error', { extensions: ['.jsx'] }],
   },
 };
