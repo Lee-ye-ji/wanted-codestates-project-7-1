@@ -7,6 +7,7 @@ const extractRepoData = ({ id, full_name, description, open_issues_count }) => {
   return { id, full_name, description, open_issues_count };
 };
 
+const isExist = (array, id) => array.some((item) => item.id === id);
 const getStoredValue = async (key) => {
   try {
     const item = await AsyncStorage.getItem(key);
@@ -19,6 +20,8 @@ const getStoredValue = async (key) => {
 function useRepositoryStorage() {
   const { data, mutate } = useSWR(ASYNC_STORAGE_KEY, getStoredValue);
 
+  const filteringArray = (id) => data.filter((item) => item.id !== id);
+
   const addRepo = async (repo) => {
     if (!repo || !repo.full_name) {
       return;
@@ -29,7 +32,12 @@ function useRepositoryStorage() {
     }
     try {
       const newRepoData = extractRepoData(repo);
+      if (data && isExist(data, newRepoData.id)) {
+        notifyMessage('이미 등록된 저장소입니다.');
+        return;
+      }
       const newStoredRepos = data ? [...data, newRepoData] : [newRepoData];
+      notifyMessage('저장되었습니다.');
       await AsyncStorage.setItem(
         ASYNC_STORAGE_KEY,
         JSON.stringify(newStoredRepos),
@@ -39,10 +47,22 @@ function useRepositoryStorage() {
     }
   };
 
+  const removeRepo = async (target) => {
+    try {
+      const newArray = filteringArray(target);
+      await AsyncStorage.setItem(ASYNC_STORAGE_KEY, JSON.stringify(newArray));
+      notifyMessage('성공적으로 삭제되었습니다.');
+    } catch (e) {}
+  };
+
   return {
     repos: data,
-    addRepo: (repos) => {
+    addRepo(repos) {
       addRepo(repos);
+      return mutate();
+    },
+    removeRepo(repos) {
+      removeRepo(repos);
       return mutate();
     },
   };
